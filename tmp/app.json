@@ -1,0 +1,59 @@
+{
+  "docs": [
+    {
+      "_attachments": {
+        "a/nested/file.txt": {
+          "data": "SGVsbG8gV29ybGQhCg==",
+          "content_type": "text/plain"
+        },
+        "js/KiwiUtils.coffee": {
+          "data": "aWYgdHlwZW9mIHdpbmRvdy5LaXdpVXRpbHMgPT0gInVuZGVmaW5lZCIgfHwgd2luZG93Lktpd2lVdGlscyA9PSBudWxsCiAgd2luZG93Lktpd2lVdGlscyA9IHt9Owo=",
+          "content_type": "application/octet-stream"
+        },
+        "index.html": {
+          "data": "PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ZW4+CiAgPGgxPldlbGNvbWUhPC9oMT4K",
+          "content_type": "text/html"
+        }
+      },
+      "_id": "_design/full",
+      "bar": "bla",
+      "lists": {
+        "csv": "(head,req) ->\n  start {'headers':{'Content-Type' : 'text/csv; charset=utf-8; header=present'}}\n  while r = getRow()\n    if  !headers\n      headers = Object.keys(r.value);\n      send('\"' + headers.join('\",\"') + '\"\\n');\n\n    headers.forEach (v,i) ->\n      send  String(r.value[v]).replace(/\\\"/g,'\"\"').replace(/^|$/g,'\"')\n      if (i + 1 < headers.length) then send(',') else send('\\n');",
+        "bar": "bla",
+        "docs": "function(head, req) {\n  var row;\n  start({\n    headers: {\n      'Content-Type': 'text/html'\n    }\n  });\n  send('<!DOCTYPE html><html lang=en>');\n  send('<ol>');\n  while(row = getRow()) {\n    send('<li>' + row.key + '</li>');\n  }\n  send('</ol>');\n}"
+      },
+      "filters": {
+        "doc": "function(doc, req) {\n  return doc.type === 'doc';\n}"
+      },
+      "language": "javascript",
+      "rewrites": [
+        {
+          "from": "/",
+          "to": "index.html"
+        }
+      ],
+      "lib": {
+        "shows": {
+          "hello": "exports.hello = 'Hello World';"
+        }
+      },
+      "shows": {
+        "doc": "function(doc, req) {\n  return {\n    body: 'Hello #' + doc.number\n  }\n}",
+        "hello": "function(doc, req) {\n  return {\n    body: require('lib/shows/hello')\n  }\n}"
+      },
+      "updates": {
+        "doc": "function(doc, req) {\n  doc = doc || {};\n\n  for (var field in req.form) {\n    doc[field] = req.form[field];\n  }\n  doc.type = 'doc';\n\n  return [doc, 'updated doc'];\n}"
+      },
+      "validate_doc_update": "function(newDoc, oldDoc, userCtx, secObj) {\n  if (typeof newDoc.number !== 'number') {\n    throw({ forbidden: 'Document must have a number.' });\n  }\n}",
+      "views": {
+        "names": {
+          "map": "function(doc) {\n  if (doc.name) {\n    emit(doc.name, null);\n  }\n}"
+        },
+        "numbers": {
+          "reduce": "_count",
+          "map": "function(doc) {\n  if (doc.number) {\n    emit(doc.number, null);\n  }\n}"
+        }
+      }
+    }
+  ]
+}
